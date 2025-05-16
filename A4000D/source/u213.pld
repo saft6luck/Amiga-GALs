@@ -1,0 +1,67 @@
+PARTNO          391477-01 ;
+NAME            U213 ;
+DATE            Sep 29, 2024 ;
+REV             0 ;
+DESIGNER        Dave Haynie ;
+COMPANY         Commodore ;
+ASSEMBLY        A4000D ;
+LOCATION        West Chester ;
+DEVICE          g16v8 ;
+
+/* MISC/CHIPRAM */
+
+PIN 1   =  CWE;
+PIN 2   =  CCRAS;
+PIN 3   =  CCCAS;
+PIN 4   =  C3;
+PIN 5   =  C1;
+PIN 6   =  CDAC;
+PIN 7   =  DRA0;
+PIN 8   =  BLIT;
+PIN 9   =  INT3;
+PIN 11   =  !DRA10;
+PIN 12   =  BCWE;
+PIN 13   =  BLOCK;
+PIN 14   =  BRIDGE;
+PIN 15   =  BRIDGE_DIR;
+PIN 16   =  KBLISS;
+PIN 17   =  BLISS;
+PIN 18   =  CBLIT;
+PIN 19   =  NC;
+
+!NC = !CCCAS;
+NC.oe = 'b'1;
+
+!CBLIT = C3 & C1 & CDAC & !BLIT
+    # !CCRAS & !CBLIT
+    # !CBLIT & C3;
+CBLIT.oe = 'b'1;
+
+!BLISS = 'b'0;
+BLISS.oe = 'b'0;
+
+!KBLISS = !C3 & !BLISS & C1 & BLOCK
+    # !BLISS & !KBLISS & BLOCK
+    # C3 & !KBLISS & BLOCK
+    # !C1 & !KBLISS & BLOCK;
+KBLISS.oe = 'b'1;
+
+!BRIDGE_DIR = CWE
+    # !CCCAS & !BRIDGE_DIR;
+BRIDGE_DIR.oe = 'b'1;
+
+!BRIDGE = !CWE & C3 & !CDAC & !BLIT
+    # !CCCAS & C3 & !CDAC & DRA0 & !BLIT
+    # !CBLIT & !C3 & CDAC & DRA0
+    # !CCRAS & !BRIDGE
+    # !CCCAS & !BRIDGE;
+BRIDGE.oe = 'b'1;
+
+!BLOCK = C3 & !C1 & !INT3
+    # !C3 & C1 & !BLIT & !BLOCK
+    # !C1 & !BLOCK
+    # C3 & !BLOCK;
+BLOCK.oe = 'b'1;
+
+!BCWE = !CWE & C3;
+BCWE.oe = 'b'1;

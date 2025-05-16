@@ -1,0 +1,90 @@
+PARTNO          391475-01 ;
+NAME            U714 ;
+DATE            Sep 29, 2024 ;
+REV             0 ;
+DESIGNER        Dave Haynie ;
+COMPANY         Commodore ;
+ASSEMBLY        A4000D ;
+LOCATION        West Chester ;
+DEVICE          g16v8 ;
+
+/* Zorro */
+
+/** INPUTS: **/
+
+/*
+PIN [3..9,11]      = [ED8..15]  ;
+PIN [15..18,1..2]  = [EA18..23] ;
+PIN 14             = CCS        ;
+*/
+PIN 1   = EA22   ;
+PIN 2   = EA23   ;
+PIN 3   = ED8    ;
+PIN 4   = ED9    ;
+PIN 5   = ED10   ;
+PIN 6   = ED11   ;
+PIN 7   = ED12   ;
+PIN 8   = ED13   ;
+PIN 9   = ED14   ;
+PIN 11  = ED15   ;
+PIN 14  = CCS    ;
+PIN 15  = EA18   ;
+PIN 16  = EA19   ;
+PIN 17  = EA20   ;
+PIN 18  = EA21   ;
+
+/** OUTPUTS: **/
+PIN 12  = MEMZ2  ;
+PIN 13  = IOZ2   ;
+PIN 19  = ADDRZ3 ;
+
+field addr = [EA23..EA18];
+field data = [ED15..ED8];
+
+/** Inputs **/
+!EA21 = 'b'0;
+EA21.oe = 'b'0;
+
+!EA20 = 'b'0;
+EA20.oe = 'b'0;
+
+!EA19 = 'b'0;
+EA19.oe = 'b'0;
+
+!EA18 = 'b'0;
+EA18.oe = 'b'0;
+
+!CCS = 'b'0;
+CCS.oe = 'b'0;
+
+/** Outputs **/
+!ADDRZ3 = !EA23 & !EA22 & !EA21 & !EA20 & !EA19 & !EA18 &
+          ED8 & ED9 & ED10 & ED11 & ED12 & ED13 & ED14 & ED15
+        # ED12 & !ED15
+        # ED14 & !ED15
+        # ED13 & !ED15;
+ADDRZ3.oe = 'b'1;
+
+!IOZ2 = EA23 & EA22 & EA21 & !EA20 & EA19 &
+        !ED8 & !ED9 & !ED10 & !ED11 & !ED12 & !ED13 & !ED14 & !ED15
+      # EA23 & EA22 & EA21 & !EA20 & EA19 & !CCS
+      # EA23 & !EA22 & EA21 & !EA20 &
+        !ED8 & !ED9 & !ED10 & !ED11 & !ED12 & !ED13 & !ED14 & !ED15
+      # EA23 & !EA22 & EA21 & !EA20 & !CCS
+      # EA23 & !EA22 & EA21 & EA20 & !EA19 &
+        !ED8 & !ED9 & !ED10 & !ED11 & !ED12 & !ED13 & !ED14 & !ED15
+      # EA23 & !EA22 & EA21 & EA20 & !EA19 & !CCS;
+IOZ2.oe = 'b'1;
+
+!MEMZ2 = !EA23 & !EA22 & EA21 &
+         !ED8 & !ED9 & !ED10 & !ED11 & !ED12 & !ED13 & !ED14 & !ED15
+       # !EA23 & !EA22 & EA21 & !CCS
+       # !EA23 & EA22 &
+         !ED8 & !ED9 & !ED10 & !ED11 & !ED12 & !ED13 & !ED14 & !ED15
+       # !EA23 & EA22 & !CCS
+       # EA23 & !EA22 & !EA21 &
+         !ED8 & !ED9 & !ED10 & !ED11 & !ED12 & !ED13 & !ED14 & !ED15
+       # EA23 & !EA22 & !EA21 & !CCS
+       # EA23 & EA22 & EA21 & EA20 & !EA19 &
+         !ED8 & !ED9 & !ED10 & !ED11 & !ED12 & !ED13 & !ED14 & !ED15;
+MEMZ2.oe = 'b'1;

@@ -1,0 +1,55 @@
+PARTNO          391476-01 ;
+NAME            U701 ;
+DATE            Sep 29, 2024 ;
+REV             0 ;
+DESIGNER        Dave Haynie ;
+COMPANY         Commodore ;
+ASSEMBLY        A4000D ;
+LOCATION        West Chester ;
+DEVICE          g16v8ms ;
+
+/* Arbiter */
+
+PIN   1   =  CLK;
+PIN   2   =  CIPL0;
+PIN   3   =  CIPL1;
+PIN   4   =  CIPL2;
+PIN   5   =  BOSS;
+PIN   6   =  CBR;
+PIN   7   =  I7M;
+PIN   8   =  BR;
+PIN   9   =  INTENA;
+PIN   10   =  GND;
+PIN   11   =  !OE;
+PIN   12   =  BG;
+PIN   13   =  BG30;
+PIN   14   =  NC;
+PIN   15   =  IPL2;
+PIN   16   =  IPL1;
+PIN   17   =  IPL0;
+PIN   18   =  XCLK;
+PIN   19   =  CCS;
+PIN   20   =  VCC;
+
+!CCS = 'b'0;
+CCS.oe = 'b'0;
+
+!XCLK = !CCS & I7M;
+XCLK.oe = 'b'1;
+
+!IPL0.d = !CIPL0 & !INTENA;
+/* IPL0.oe = OE; // Implicit */
+!IPL1.d = !CIPL1 & !INTENA;
+/* IPL1.oe = OE; // Implicit */
+!IPL2.d = !CIPL2 & !INTENA;
+/* IPL2.oe = OE; // Implicit */
+
+!NC.d = 'b'0;
+/* NC.oe = OE; // Implicit */
+
+!BG30 = BOSS & !CBR
+    # BOSS & !BR;
+BG30.oe = 'b'1;
+
+!BG = 'b'0;
+BG.oe = BOSS;

@@ -1,0 +1,103 @@
+PARTNO          391478-01 ;
+NAME            U212 ;
+DATE            Sep 29, 2024 ;
+REV             0 ;
+DESIGNER        Dave Haynie ;
+COMPANY         Commodore ;
+ASSEMBLY        A4000D ;
+LOCATION        West Chester ;
+DEVICE          g22v10 ;
+
+/* RASCAS */
+
+PIN 1   =  DRA10;
+PIN 2   =  CCCAS;
+PIN 3   =  LLDS;
+PIN 4   =  LMDS;
+PIN 5   =  UMDS;
+PIN 6   =  UUDS;
+PIN 7   =  C3;
+PIN 8   =  C1;
+PIN 9   =  CDAC;
+PIN 10   =  CWE;
+PIN 11   =  CHIPRAM_SIZE;
+
+PIN 13   =  DRA0;
+PIN 14   =  CBLIT;
+PIN 15   =  NC;
+PIN 16   =  CMA9;
+PIN 17   =  CRAS1;
+PIN 18   =  CRAS0;
+PIN 19   =  CCAS3;
+PIN 20   =  CCAS2;
+PIN 21   =  CCAS1;
+PIN 22   =  CCAS0;
+PIN 23   =  CCRAS;
+
+!CCRAS = 'b'0;
+CCRAS.oe = 'b'0;
+
+!CCAS0 = !CCCAS & !UUDS & C3 & CDAC & CBLIT
+    # !CCCAS & !C3 & !C1 & !CDAC & NC & !CBLIT & !DRA0
+    # !CCCAS & C3 & !C1 & !CDAC & CWE & !CBLIT & !DRA0
+    # !CCCAS & !C1 & CDAC & !CWE & !CBLIT & !DRA0
+    # CCRAS & C3 & !CDAC & !CBLIT
+    # !CCCAS & !CCAS0;
+CCAS0.oe = 'b'1;
+
+!CCAS1 = !CCCAS & !UMDS & C3 & CDAC & CBLIT
+    # !CCCAS & !C3 & !C1 & !CDAC & NC & !CBLIT & !DRA0
+    # !CCCAS & C3 & !C1 & !CDAC & CWE & !CBLIT & !DRA0
+    # !CCCAS & !C1 & CDAC & !CWE & !CBLIT & !DRA0
+    # CCRAS & C3 & !CDAC & !CBLIT
+    # !CCCAS & !CCAS1;
+CCAS1.oe = 'b'1;
+
+!CCAS2 = !CCCAS & !LMDS & C3 & CDAC & CBLIT
+    # !CCCAS & C3 & !C1 & !CDAC & CWE & !CBLIT
+    # !CCCAS & !C3 & !C1 & !CDAC & NC & !CBLIT
+    # !CCCAS & !C1 & CDAC & !CWE & !CBLIT & DRA0
+    # CCRAS & C3 & !CDAC & !CBLIT
+    # !CCCAS & !CCAS2;
+CCAS2.oe = 'b'1;
+
+!CCAS3 = !CCCAS & !LLDS & C3 & CDAC & CBLIT
+    # !CCCAS & C3 & !C1 & !CDAC & CWE & !CBLIT
+    # !CCCAS & !C3 & !C1 & !CDAC & NC & !CBLIT
+    # !CCCAS & !C1 & CDAC & !CWE & !CBLIT & DRA0
+    # CCRAS & C3 & !CDAC & !CBLIT
+    # !CCCAS & !CCAS3;
+CCAS3.oe = 'b'1;
+
+!CRAS0 = !DRA10 & !CCRAS & CCCAS & C3 & C1 & CDAC & CHIPRAM_SIZE
+    # !CCRAS & CCCAS & C3 & C1 & CDAC & !CHIPRAM_SIZE & !DRA0
+    # CCRAS & !CCAS0 & C3 & !C1 & !CDAC
+    # CCRAS & !CCAS1 & C3 & !C1 & !CDAC
+    # CCRAS & !CCAS3 & C3 & !C1 & !CDAC
+    # CCRAS & !CCAS2 & C3 & !C1 & !CDAC
+    # !CCRAS & !CRAS0
+    # !CRAS0 & !C1;
+CRAS0.oe = 'b'1;
+
+!CRAS1 = DRA10 & !CCRAS & CCCAS & C3 & C1 & CDAC & CHIPRAM_SIZE
+    # !CCRAS & CCCAS & C3 & C1 & CDAC & !CHIPRAM_SIZE & DRA0
+    # CCRAS & !CCAS0 & C3 & !C1 & !CDAC
+    # CCRAS & !CCAS1 & C3 & !C1 & !CDAC
+    # CCRAS & !CCAS3 & C3 & !C1 & !CDAC
+    # CCRAS & !CCAS2 & C3 & !C1 & !CDAC
+    # !CCRAS & !CRAS1
+    # !CRAS1 & !C1;
+CRAS1.oe = 'b'1;
+
+!CMA9 = C1 & CDAC & !DRA0
+    # !DRA10 & C3 & !CDAC
+    # !DRA10 & !CCCAS
+    # !DRA10 & !C1;
+CMA9.oe = CHIPRAM_SIZE;
+
+!NC = C3 & !CWE
+    # !CCRAS & !NC;
+NC.oe = 'b'1;
+
+!CBLIT = 'b'0;
+CBLIT.oe = 'b'0;
