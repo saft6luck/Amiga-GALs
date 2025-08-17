@@ -10,51 +10,68 @@ DEVICE          g16v8 ;
 
 /* IDECODE */
 
-/** PINS **/
-PIN   1  =  AS_;
-PIN   2  =  DS;
+/** Inputs **/
+PIN   1  =  !AS;
+PIN   2  =  !DS;
 PIN   3  =  A12;
 PIN   4  =  A13;
 PIN   5  =  A1;
-PIN   6  =  SCSI;
+PIN   6  =  !SCSI;
 PIN   7  =  CPUBCLK;
 
-PIN  12  =  AS;
-PIN  13  =  SOME_EN;
-PIN  14  =  DSACK1;
-PIN  15  =  INTREG1;
-PIN  16  =  INTREG2;
-PIN  17  =  IDE_CS2;
-PIN  18  =  IDE_CS1;
-PIN  19  =  IDE_IREG;
+/** Outputs **/
+PIN  12  =  !nAS;
+PIN  13  =  !ACCESS;
+PIN  14  =  !DSACK1;
+PIN  15  =  !DLY_AS1;
+PIN  16  =  !DLY_AS2;
+PIN  17  =  !IDE_CS2;
+PIN  18  =  !IDE_CS1;
+PIN  19  =  !IDE_IREG; /* HD_STAT */
 
-!IDE_IREG = !DS & A12 & A13 & !A1 & !SCSI;
-IDE_IREG.oe = 'b'1;
+/** Declarations and Intermediate Variable Definitions  **/
 
-!IDE_CS1 = !A12 & A13 & !SCSI
-    # AS_ & !IDE_CS1;
-IDE_CS1.oe = 'b'1;
+EN = 'b'1;
 
-!IDE_CS2 = A12 & A13 & A1 & !SCSI
-    # AS_ & !IDE_CS2;
-IDE_CS2.oe = 'b'1;
+/** Logic Equations **/
 
-!INTREG2 = INTREG2 & !INTREG1 & !CPUBCLK
-    # !INTREG2 & !INTREG1;
-INTREG2.oe = 'b'1;
+/* AS delay 1 */
+DLY_AS1 = AS & !DLY_AS1 & CPUBCLK
+    # AS & DLY_AS1;
+DLY_AS1.oe = EN;
 
-!INTREG1 = !AS_ & INTREG1 & CPUBCLK
-    # !AS_ & !INTREG1;
-INTREG1.oe = 'b'1;
+/* AS delay 2 */
+DLY_AS2 = !DLY_AS2 & DLY_AS1 & !CPUBCLK
+    # DLY_AS2 & DLY_AS1;
+DLY_AS2.oe = EN;
 
-!DSACK1 = !AS_ & A12 & A13 & !A1 & !SCSI;
-DSACK1.oe = A12 & A13 & !A1 & !SCSI & !INTREG1;
+/* select signal for interrupt state */
+/* DD3000, DD3001, DD3004, DD3005, ... D3FFC, D3FFD */
+IDE_IREG = DS & A13 & A12 & !A1 & SCSI; /* should be AS instead of DS */
+IDE_IREG.oe = EN;
 
-!SOME_EN = A12 & A13 & A1 & !INTREG2 & !SCSI & CPUBCLK
-    # !A12 & A13 & !INTREG2 & !SCSI & CPUBCLK
-    # !AS_ & !SOME_EN
-    # !CPUBCLK & !SOME_EN;
-SOME_EN.oe = 'b'1;
+/* chip select for first IDE controller (and data register) */
+/* DD2000-DD2FFF */
+IDE_CS1 =  A13 & !A12 & SCSI
+         # !AS & IDE_CS1;     /* should be AS instead of !AS ? */
+IDE_CS1.oe = EN;
 
-!AS = AS_;
-AS.oe = 'b'1;
+/* chip select for second IDE controller */
+/* DD3002, DD3003, DD3006, DD3007, ... D3FFE, D3FFF */
+IDE_CS2 =   A13 & A12 & A1 & SCSI
+         # !AS & IDE_CS2;     /* should be AS instead of !AS ? */
+IDE_CS2.oe = EN;
+
+/* DSACK1 for 16bit interrupt status register access */
+DSACK1    = A13 & A12 & !A1 & SCSI & AS ;
+DSACK1.oe = A13 & A12 & !A1 & SCSI & DLY_AS1;
+
+/* IDE access phase */
+ACCESS =  A13 &  A12 & A1 &  DLY_AS2 & SCSI & CPUBCLK /* CS2 */
+        # A13 & !A12 &       DLY_AS2 & SCSI & CPUBCLK /* CS1 */
+        # AS & ACCESS
+        # !CPUBCLK & ACCESS;
+ACCESS.oe = EN;
+
+nAS = !AS;
+nAS.oe = EN;
