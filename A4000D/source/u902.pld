@@ -6,77 +6,85 @@ DESIGNER        Dave Haynie ;
 COMPANY         Commodore ;
 ASSEMBLY        A4000D ;
 LOCATION        West Chester ;
-DEVICE          g16v8ms ;
+DEVICE          g16v8 ;
 
 /* istate */
 
-PIN  1   =  CLK ;
-PIN  2   =  SOME_ENABLE ;
-PIN  3   =  A13 ; /* unused? */
-PIN  4   =  AS_ ;
+/** Inputs **/
+PIN  1   =  CLK ; /* = CPUBCLK */
+PIN  2   =  !ACCESS ;
+PIN  3   =  A13 ; /* unused */
+PIN  4   =  !AS ;
 PIN  5   =  R_W ;
 PIN  6   =  A1 ;
-PIN  7   =  IDE_IREG ;
+PIN  7   =  !IDE_IREG ; /* HD_STAT */
 PIN  8   =  CPUBCLK ;
-PIN  9   =  IDE_INT ;
-PIN 11   =  !OE ;
+PIN  9   =  !IDE_INT ;
+/* PIN 11   =  !OE ; */ /* hard wired as OE in registered mode */
+
+/** Outputs **/
 PIN 12   =  D31 ;
-PIN 13   =  INTREG1 ;
-PIN 14   =  INTREG2 ;
-PIN 15   =  INTREG3 ;
-PIN 16   =  INTREG4 ;
-PIN 17   =  IOR ;
-PIN 18   =  IOW ;
-PIN 19   =  DSACK1 ;
+PIN 13   =  !SVAR_D ;
+PIN 14   =  !SVAR_C ;
+PIN 15   =  !SVAR_B ;
+PIN 16   =  !SVAR_A ;
+PIN 17   =  !IOR ;
+PIN 18   =  !IOW ;
+PIN 19   =  !DSACK1 ;
 
-!DSACK1 = !SOME_ENABLE & !DSACK1 & !AS_
-    # !SOME_ENABLE & !IOW & IOR & INTREG4 & !INTREG3 & !INTREG2 & !CPUBCLK & !INTREG1
-    # !SOME_ENABLE & IOW & !IOR & INTREG4 & !INTREG3 & INTREG2 & !CPUBCLK & !INTREG1
-    # !SOME_ENABLE & IOW & !IOR & INTREG4 & !A1 & INTREG3 & !INTREG2 & !CPUBCLK & !INTREG1
-    # !SOME_ENABLE & !IOW & IOR & INTREG4 & !A1 & INTREG3 & !INTREG2 & !CPUBCLK & INTREG1;
-DSACK1.oe = !SOME_ENABLE;
+/* IDE state machine */
+SVAR_A.d =  !IOW & !IOR &  SVAR_A &  SVAR_B & !SVAR_C
+          # !IOW & !IOR &  SVAR_A &  SVAR_B &            SVAR_D
+          # !IOW & !IOR & !SVAR_A &  SVAR_B &  SVAR_C & !SVAR_D;
+/* SVAR_A.oe = OE; */
 
-!IOW.d = !IOW & IOR & INTREG4 & INTREG3
-    # !IOW & IOR & INTREG4 & !INTREG1
-    # !IOW & IOR & INTREG4 & A1 & INTREG2
-    # IOR & !R_W & INTREG4 & INTREG3 & INTREG2 & !INTREG1;
-/* IOW.oe = OE; // Implicit */
+SVAR_B.d =  !IOR &        !SVAR_A &  SVAR_B
+          # !IOW &        !SVAR_A &  SVAR_B
+          # !IOW & !IOR &            SVAR_B & !SVAR_C
+          # !IOW & !IOR &            SVAR_B &            SVAR_D
+          #  IOW & !IOR & !SVAR_A &            SVAR_C & !SVAR_D
+          # !IOW &  IOR & !SVAR_A &            SVAR_C & !SVAR_D;
+/* SVAR_B.oe = OE; */
 
-!IOR.d = IOW & !IOR & INTREG4 & INTREG3
-    # IOW & !IOR & INTREG4 & !INTREG1
-    # IOW & !IOR & INTREG4 & A1 & INTREG2
-    # IOW & R_W & INTREG4 & INTREG3 & INTREG2 & !INTREG1;
-/* IOR.oe = OE; // Implicit */
+SVAR_C.d =   IOW & !IOR & !SVAR_A &                      SVAR_D
+          # !IOW &  IOR & !SVAR_A &                      SVAR_D
+          # !IOW & !IOR &            SVAR_B &            SVAR_D
+          #  IOW & !IOR & !SVAR_A &  SVAR_B &  SVAR_C
+          # !IOW &  IOR & !SVAR_A &  SVAR_B &  SVAR_C;
+/* SVAR_C.oe = OE; */
 
-!INTREG4.d = IOW & IOR & !INTREG4 & !INTREG3 & INTREG2
-    # IOW & IOR & !INTREG4 & !INTREG3 & !INTREG1
-    # IOW & IOR & INTREG4 & !INTREG3 & !INTREG2 & INTREG1;
-/* INTREG4.oe = OE; // Implicit */
+SVAR_D.d =  !IOW & !IOR &            SVAR_B & !SVAR_C
+          #  IOW & !IOR & !SVAR_A &           !SVAR_C           & A1 
+          # !IOW &  IOR & !SVAR_A &           !SVAR_C           & A1
+          #  IOW & !IOR & !SVAR_A & !SVAR_B & !SVAR_C
+          # !IOW &  IOR & !SVAR_A & !SVAR_B & !SVAR_C
+          #  IOW & !IOR & !SVAR_A &           !SVAR_C &  SVAR_D
+          # !IOW &  IOR & !SVAR_A &           !SVAR_C &  SVAR_D
+          # !IOW & !IOR & !SVAR_A &           !SVAR_C & !SVAR_D & ACCESS;               /* ACCESS1 */
+/* SVAR_D.oe = OE; */
 
-!INTREG3.d = IOR & INTREG4 & !INTREG3
-    # IOW & INTREG4 & !INTREG3
-    # IOW & IOR & !INTREG3 & INTREG2
-    # IOW & IOR & !INTREG3 & !INTREG1
-    # !IOW & IOR & INTREG4 & !INTREG2 & INTREG1
-    # IOW & !IOR & INTREG4 & !INTREG2 & INTREG1;
-/* INTREG3.oe = OE; // Implicit */
+/* 16bit cycle termination */
+DSACK1 = ACCESS & DSACK1 & AS
+    # !CPUBCLK & ACCESS &  IOW & !IOR &       !SVAR_A &  SVAR_B &  SVAR_C &  SVAR_D
+    # !CPUBCLK & ACCESS & !IOW &  IOR &       !SVAR_A &  SVAR_B & !SVAR_C &  SVAR_D
+    # !CPUBCLK & ACCESS & !IOW &  IOR & !A1 & !SVAR_A & !SVAR_B &  SVAR_C &  SVAR_D
+    # !CPUBCLK & ACCESS &  IOW & !IOR & !A1 & !SVAR_A & !SVAR_B &  SVAR_C & !SVAR_D;
+DSACK1.oe = ACCESS;
 
-!INTREG2.d = !IOW & IOR & INTREG4 & !INTREG1
-    # IOW & !IOR & INTREG4 & !INTREG1
-    # IOW & IOR & !INTREG3 & !INTREG1
-    # !IOW & IOR & INTREG4 & !INTREG3 & !INTREG2
-    # IOW & !IOR & INTREG4 & !INTREG3 & !INTREG2;
-/* INTREG2.oe = OE; // Implicit */
+/* read signal for IDE */
+IOR.d =  !IOW &  IOR & !SVAR_A & !SVAR_B
+       # !IOW &  IOR & !SVAR_A &                      SVAR_D
+       # !IOW &  IOR & !SVAR_A &           !SVAR_C &            A1
+       # !IOW &        !SVAR_A & !SVAR_B & !SVAR_C &  SVAR_D &  R_W;
+/* IOR.oe = OE; */
 
-!INTREG1.d = IOW & IOR & !INTREG3 & INTREG2
-    # !IOW & IOR & INTREG4 & A1 & INTREG2
-    # IOW & !IOR & INTREG4 & A1 & INTREG2
-    # !IOW & IOR & INTREG4 & INTREG3 & INTREG2
-    # IOW & !IOR & INTREG4 & INTREG3 & INTREG2
-    # !IOW & IOR & INTREG4 & INTREG2 & !INTREG1
-    # IOW & !IOR & INTREG4 & INTREG2 & !INTREG1
-    # !SOME_ENABLE & IOW & IOR & INTREG4 & INTREG2 & INTREG1;
-/* INTREG1.oe = OE; // Implicit */
+/* write signal for IDE */
+IOW.d =   IOW & !IOR & !SVAR_A & !SVAR_B
+       #  IOW & !IOR & !SVAR_A &                      SVAR_D
+       #  IOW & !IOR & !SVAR_A &           !SVAR_C &            A1
+       #        !IOR & !SVAR_A & !SVAR_B & !SVAR_C &  SVAR_D & !R_W ;
+/* IOW.oe = OE; */
 
-!D31 = IDE_INT;
-D31.oe = !IDE_IREG;
+/* read IDE interrupt signal */
+D31 = IDE_INT;
+D31.oe = IDE_IREG;
